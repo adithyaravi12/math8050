@@ -1,0 +1,238 @@
+---
+title: "**S2208 MATH8050 Data Analysis - Section 001: Homework 2 Due on 09/21/22**"
+author: "**Adithya Ravi, C09059838**"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo=TRUE, include=TRUE, results="hide"}
+# load packages 
+
+
+sessionInfo()
+```
+
+# Solutions
+
+## 1
+
+1. Write an R function called `f()` that can take a numeric vector as input argument to implement this function using `if` (or `ifelse`) statements, and plot the function in the interval $[-2, 2]$.
+
+
+```{r}
+f <- function(x){
+  if(x <= 0) {
+    -(x^3)
+  }
+  else if(x > 0 & x <= 1){
+    x^2
+  }
+  else{
+    sqrt(x)
+  }
+}
+
+f <- Vectorize(f, vectorize.args = 'x')
+curve(f(x), from = -2, to = 2)
+```
+
+## 2
+
+$$ 
+p(x|\theta) = \text{Poisson}(x|\theta) = \exp(-\theta) \frac{\theta^x}{ x!},
+$$ for $x \in \{0,1,2,\ldots \}$ (and is 0 otherwise). Suppose $X_1,\ldots,X_n \stackrel{iid}{\sim} \text{Poisson}(\theta)$ given $\theta.$ Please work on the following problems. 
+
+a.  Find the likelihood function and the maximum likelihood estimator of $\theta$. 
+
+The  n observations are independent. As a consequence, the likelihood function is equal to the product of their probability mass functions:
+&nbsp;
+$$\Pi_{i=1}^{n}\frac{\theta^{x_i}e^{-\theta}}{x_i!}$$
+&nbsp;
+It will be easier to find the value of $\theta$ that maximizes this quantity if we take the log:
+$$\log (\Pi_{i=1}^{n}\frac{\theta^{x_i}e^{-\theta}}{x_i!}) = \sum_{i=1}^{n}\log(\frac{\theta^{x_i}e^{-\theta}}{x_i!}) = \sum_{i=1}^n x_i\log(\theta) - \sum_{i=1}^n \theta - \sum_{i=1}^n \log (x_i!)$$
+$$=\log(\theta)\sum_{i=1}^nx_i - n\theta - \sum_{i=1}^n \log (x_i!)$$ 
+&nbsp;
+To find the value of $\theta$ that maximizes this equation, we take the derivative, set the derivative equal to zero, and solve for $\theta$:
+$$0 = \frac{1}{\theta}\sum_{i=1}^nx_i - n$$
+$$n\theta = \sum_{i=1}^n x_i$$
+$$\theta = \frac{\sum_{i=1}^n x_i}{n} = \bar{x}$$"
+&nbsp;
+Therefore, the estimator is just the sample mean of the n observations in the sample.
+&nbsp;
+
+b. Show that the $\hat{\theta}$ is the unique maximum likelihood estimator (MLE). 
+
+It is indeed unique, because the negative log-likelihood is strictly convex.
+
+&nbsp;
+&nbsp;
+
+c. Further assume that the observations are $\{0, 2, 5, 6, 10, 15, 8, 7\}$. Plot the likelihood function as a function of $\theta$, and maximize the likelihood function numerically using the `optim` function from the base package. Denote the numerical solution to the MLE by $\hat{\theta}_1$. Is the numerical solution $\hat{\theta}_1$ the same as the true MLE $\hat{\theta}=\bar{x}=6.625$? 
+
+
+
+
+&nbsp;
+&nbsp;
+
+d. Assume that we want to put a prior distribution on $\theta$ and perform Bayesian estimation. Your prior on $\theta$ is a gamma distribution 
+\begin{align*}
+p(\theta) = \text{Ga}(\theta|a, b) = \frac{b^a}{\Gamma(a)} \theta^{a-1} \exp(-b\theta) \I(\theta>0). 
+\end{align*}
+Derive the posterior distribution of $\theta$. 
+
+
+&nbsp;
+&nbsp;
+
+e. Consider two sets of values for $a, b$: (1) $a=0.1, b=0.1$, which corresponds to a non-informative prior, and (2) $a=2, b=5$, which corresponds to an informative prior. Plot the prior, likelihood, and posterior, and arrange the plots from (1) and (2) in two panels in a row.
+
+
+
+&nbsp;
+&nbsp;
+
+f. Derive the expression of the marginal likelihood with the $\text{Ga}(a, b)$ prior on $\theta$.
+
+
+
+&nbsp;
+&nbsp;
+
+g. Derive the expression of the posterior predictive distribution with the $\text{Ga}(a, b)$ prior on $\theta$.
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+## 3
+
+a. Show that the hat matrix is symmetric and idempotent: i.e., $H^\top = H$ and  $HH=H$.
+
+To show that the hat matrix is symmetric we have to prove that  $H^\top = H$
+We know that 
+$$H = X(X'X)^{-1}X'$$
+The transpose of a product is the product of the transposes in reverse order. Therefore,
+$$ H' = [X(X'X)^{-1}X']' = X [(X'X)^{-1}]' X'$$
+We know that $(X'X)$ is symmetric and therefore the inverse $(X'X)^{-1}$ must also be symmetric. If $(X'X)^{-1}$ is symmetric, then by definition:
+$$[(X'X)^{-1}]' = (X'X)^{-1}$$
+Substituting this in our previous equation we get 
+$$H' = [X(X'X)^{-1}X']' = X [(X'X)^{-1}]' X' = X(X'X)^{-1}X' = H$$
+Thus, $ H' = H $
+&nbsp;
+&nbsp;
+To show that H is idempotent we need to prove that  $HH=H$
+We know that $H = X(X'X)^{-1}X'$. Thus,
+$$HH = [X(X'X)^{-1}X'] [X(X'X)^{-1}X']$$
+$$ HH =  X (X'X)^{-1} (X'X) (X'X)^{-1} X'$$
+Since $ (X'X)^{-1} (X'X) = I$ (Identity matrix), we can rewrite this as,
+$$  HH =  X (I )(X'X)^{-1} X'$$
+$$  HH =  X (X'X)^{-1} X' = H$$
+Thus, $HH=H$
+
+b. Show that the residual vector $\mathbf{e} = \mathbf{y} - \hat{\mathbf{y}}$ has mean zero, i.e., $E(\mathbf{e}) = 0$ and variance $Var(\mathbf{e}) = \sigma^2 (I - H)$. 
+
+The residual vector can also be written as:
+$$\mathbf{e} = \mathbf{y} - \hat{\mathbf{y}} = \mathbf{y} - \mathbf{X}\mathbf{b} $$
+Therefore,
+$$ \mathbf{y} = \mathbf{X}\mathbf{b} +  \mathbf{e}$$
+Recall the normal equation : 
+$$(X'X)\hat{b} = X'y$$
+Now substituting $ y = X \hat{b} + e $ in the above equation we get,
+$$ (X'X)\hat{b} = X'(X\hat{b}+e) \\
+(X'X)\hat{b} = (X'X)\hat{b} + X'e \\
+X'e = 0 $$
+From $X'e = 0$ we can derive that if there is a constant the first column in X i.e, $X_1 $ will be a column of ones. This means that for the first element in the $X′e$ vector (i.e, $X_{11} * e_1 + X_{12} * e_2... + X_{1n} * e_n$) to be zero,
+$$\sum{e_i} = 0$$.
+If $\sum{e_i} = 0$, we can derive that the mean of the residual vector is also zero:
+$$ E[e] = \frac{\sum{e_i}}{n} = 0$$
+&nbsp;
+To show the variance of residuals we start with $e = Y-\hat{Y}$. Since $\hat{Y} = HY$,
+$$ e = Y - HY = (I - H)Y \\
+\sigma^2[e] = (I-H)\sigma^2[I-H]'
+$$
+But we can see that:
+$$ \sigma^2[Y] = \sigma^2[e] = \sigma^2[I] $$
+This means that:
+$$ \sigma^2[e] = \sigma^2(I - H)I(I - H) \\
+\sigma^2[e] = \sigma^2(I - H)(I-H)
+$$
+Since $(I-H)$ is idempotent we have, 
+$$ \sigma^2[e] = \sigma^2[I-H]$$
+&nbsp;
+
+c. Show that the MSE is an unbiased estimator of $\sigma^2$, i.e., $E(MSE) = \sigma^2$. 
+
+To prove that $E(MSE) = \sigma^2$ , we have to prove that $E(MSE) = (n-2)\sigma^2$.
+Under the usual notation,
+$$ Y = Xb+e \\
+\hat{Y} = X \hat{b} \\
+\hat{b} = (X'X)^{-1}X'Y \\
+   \hat{b'} = Y'X(X'X)^{-1}
+$$
+&nbsp;
+Now,
+$$
+\sum{(Y_i-\hat{Y_i})}^2 = (Y_i - \hat{Y_i})'(Y_i - \hat{Y_i}) \\ 
+=(X(b-\hat{b})+e)'(X(b-\hat{b})+e) \\
+= (b-\hat{b})'X'X(b-\hat{b})+e'X(b-\hat{b}) + (b-\hat{b})'X'e+e'e
+$$
+&nbsp;
+Simplifying the individual terms:
+TERM 1
+$$ (b-\hat{b})'X'X(b-\hat{b}) = (b- (X'X)^{-1}X'Y)'X'X(b-(X'X)^{-1}X'Y \\
+= (b'-Y'X(X'X)^{-1})X'X(b-(X'X)^{-1}X'Y) \\
+= b'X'Xb-Y'Xb-b'(X'X)^{-1}X'Y+Y'X(X'X)^{-1}X'Y \\
+= b'X'Xb-(b'X'+e')Xb-b'(X'X)(X'X)^{-1}X'Y + (b'X'+e')X(X'X)^{-1}X'Y (substituting) \\ 
+= e'Xb+e'X(X'X)^{-1}X'Y (cancelled) \\
+= -e'Xb+e'X(X'X)^{-1}X'(Xb+e) (substituting) \\ 
+=e'X(X'X)^{-1}X'e
+
+$$
+&nbsp;
+TERM 2
+$$
+e'X(B-\hat{b}) \\ 
+= e'X(b-(X'X)^{-1}X'Y) \\
+= e'X[b-(X'X)^{-1}X'(Xb+e)] \\
+= e'X [b-(X'X)^{-1}X'Xb-(X'X)^{-1}X'e] \\
+= -e'X(X'X)^{-1}X'e
+$$
+&nbsp;
+TERM 3 is a transpose of TERM 2
+Now substituting in we get, 
+$$
+\sum{(Y_I-\hat{Y_i})^2} = e'X(X'X)^{-1}X'e - e'X(X'X)^{-1}X'e - e'X(X'X)^{-1}X'e+e'e \\ 
+= e'e-e'X(X'X)^{-1}X'e= e'e-e'Pe
+$$
+ P is the projection matrix which is symmetric and idempotent
+Now we calculate the expectation:
+$$
+E[\sum{(Y_i-\hat{Y_i})^2}] = E(e'e - e'Pe) = E(e'e)-E(e'Pe)= n\sigma^2 - \sigma^2(2P)
+$$
+4. (14pts total, equally weighted) Refer to the Lecture 4. For the normal simple linear regression model
+$$ y_i | x_i, \boldsymbol \beta, \sigma^2 \stackrel{ind}{\sim} N(\beta_0 + \beta_1 x_i, \sigma^2)$$ with $i=1, \ldots, n$.
+
+a. Show that 
+
+$$
+\begin{aligned}
+Var(\widehat{\boldsymbol{\beta}}) & =  \sigma^2 (\mathbf{X}^\top \mathbf{X})^{-1} =
+\left[ \begin{matrix}
+\sigma^2 \left(\frac{1}{n}+\frac{\overline{x}^2}{ \sum_{i=1}^n(x_i -\overline{x})^2}\right) &
+\frac{-\sigma^2 \overline{x}}{\sum_{i=1}^n(x_i - \overline{x})^2}\\
+\frac{-\sigma^2 \overline{x}}{\sum_{i=1}^n(x_i - \overline{x})^2} &
+\frac{\sigma^2}{\sum_{i=1}^n(x_i -\overline{x})^2} \end{matrix} \right],
+\end{aligned}
+$$
+&nbsp;
+&nbsp;
+
+b. Assume that $\sigma^2$ is given. Let $\hat{y}_h:=\hat{\beta}_0 + \hat{\beta}_1 x_h$ denote the estimator of $y_h$ at new covariate $x_h$. Show that the posterior predictive distribution of the new response $y_h$ at new covariate $x_h$ is 
+$$y_h \mid \mathbf{y}, \mathbf{X}, x_h, \sigma^2 \sim \mathcal{N}\left(\hat{y}_h, \sigma^2\left\{1 + \frac{1}{n} + \frac{(x_h - \bar{x})^2}{ \sum_{i=1}^n(x_i - \bar{x})^2} \right\} \right).$$

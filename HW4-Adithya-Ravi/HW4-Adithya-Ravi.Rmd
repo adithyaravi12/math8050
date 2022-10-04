@@ -1,0 +1,358 @@
+---
+title: "S2208 MATH8050 Data Analysis - Section 001: Homework 4 Due on 09/28/22"
+author: "Adithya Ravi, C09059838"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r include=FALSE}
+library(ggplot2)
+library(stats)
+library(reshape2)
+library(cowplot)
+library(mlbench)
+
+sessionInfo()
+```
+
+
+# Solutions
+
+# Question1
+
+## 1a
+
+$$N(x |  \theta, l^{-1}) = \sqrt{\frac{l}{2\pi}} 
+exp (-\frac{1}{2})l(x-\theta)^2$$
+
+\[\propto exp (-\frac{1}{2}l(x^2-2x\theta + \theta^2))\]
+\[\propto exp(lx\theta -\frac{1}{2}l\theta^2)\]
+
+Due to symmetry of the normal p.d.f.,
+$$N(\theta | \mu_0, \lambda_0^{-1}) = N(\mu_0 | \theta, \lambda_0^{-1}) 
+\propto exp(\lambda_0\mu_0\theta - \frac{1}{2}\lambda_0\theta^2)$$
+
+by $exp(lx\theta -\frac{1}{2}l\theta^2)$ with $x = \mu_0$ and $l = \lambda_0$. 
+Therefore, defining L and M as above,
+
+\[p(\theta | x_{1:n}) \propto {1} p(x_{1:n} | \theta)\]
+$$\prod_{i = 1}^{n}N(x_i | \theta, \lambda^{-1})$$
+
+\[\propto exp({\lambda})(\sum(x_i)\theta -\frac{1}{2}n\lambda\theta^2)\]
+
+## 1b
+
+$$N(x |  \theta, l^{-1}) = \sqrt{\frac{l}{2\pi}} exp (-\frac{1}{2})
+l(x-\theta)^2$$
+
+\[\propto exp (-\frac{1}{2}l(x^2-2x\theta + \theta^2))\]
+\[\propto exp(lx\theta -\frac{1}{2}l\theta^2)\]
+
+Due to symmetry of the normal p.d.f.,
+$$N(\theta | \mu_0, \lambda_0^{-1}) = N(\mu_0 | \theta, \lambda_0^{-1}) 
+\propto exp(\lambda_0\mu_0\theta - \frac{1}{2}\lambda_0\theta^2)$$
+
+by $exp(lx\theta -\frac{1}{2}l\theta^2)$ with $x = \mu_0$ and $l = 
+\lambda_0$. Therefore, defining L and M as above,
+
+\[p(\theta | x_{1:n}) \propto p(\theta)p(x_{1:n} | \theta)\]
+$$=N(\theta|\mu_0, \lambda_0^{-1})\prod_{i = 1}^{n}N(x_i | \theta, 
+\lambda^{-1})$$
+
+\[\propto exp(\lambda_0\mu_0\theta - \frac{1}{2}\lambda_0\theta^2)exp(\lambda)
+(\sum(x_i)\theta -\frac{1}{2}n\lambda\theta^2)\]
+
+\[=exp((\lambda_0\mu_0 + \lambda\sum x_i)\theta - \frac{1}{2}
+(\lambda_0 +n\lambda)\theta^2)\]
+
+\[=exp(LM\theta) - \frac{1}{2}L\theta^2\]
+\[\propto N(M | \theta, L^{-1}) = N(\theta | M, L^{-1})\]
+where \[ L= \lambda_0+n\lambda\] and \[M =\frac{\lambda_0 
+\mu_0 +\lambda\Sigma_{i=1}^{n}x_i}{\lambda_0+n\lambda} \]
+
+
+## 1c
+
+MLE for $\mu$:
+
+\[\frac{\partial}{\partial\mu} loglikelihood = - \frac{1}{2}\lambda \sum_{i = 1}^{n} 2(x_i - \mu)(-1)\] 
+\[= \lambda \sum_{i=1}^{n}(x_i)-\mu = 0\]
+\[= \sum_{i=1}^{n}(x_i - \mu)=0\]
+\[= \sum_{i=1}^{n}x_i-n\mu=0\]
+\[=> \mu = \frac{\sum_{i=1}^{n}x_i}{n}\]
+
+MLE for $\lambda$:
+
+\[ \frac{\partial}{\partial\lambda}(\frac{n}{2\pi}ln(\frac{\lambda}{2\pi}) - \frac{1}{2}\lambda(x_i - \mu)^2)=0\]
+\[\frac{n}{2}\frac{\frac{1}{2\pi}}{\frac{\lambda}{2\pi}} = \frac{1}{2}\sum(x_i - \mu)^2\]
+\[\lambda = \frac{n}{\sum(x_i - \mu)^2}\]
+\[\lambda = \frac{1}{\frac{\sum(x_i - \mu)^2}{n}}\]
+
+```{r}
+set.seed(123)
+rnd <- rnorm(100, mean=0, sd=3)
+lambda_max <- 1/var(rnd)
+meanvalue_max <- mean(rnd)
+
+lambda_max
+meanvalue_max
+
+my_function<-function(mean_value,lambda){
+final <- 0
+for (v in rnd) {
+  c<-(v-mean_value)**2
+  final<-final+c
+}
+
+log.likli.hood<-(50)*log(lambda/(2*3.14))-((1/2)*(lambda)*final)
+
+return(log.likli.hood)
+}
+
+lambda<-seq(0,0.5,length=100)
+mean_value<-seq(0,1,length=100)
+
+z<-my_function(mean_value,lambda)
+total<-data.frame(lambda = lambda,mean_value = mean_value, z = z)
+total
+ggplot(total,aes(mean_value,lambda,z=z)) + 
+  geom_density_2d()  + 
+  geom_vline(xintercept = meanvalue_max) + 
+  geom_hline(yintercept = lambda_max) + 
+  geom_text(label = "(0.2712177,0.1333494)", x=0.2712177, y=0.1333494)
+
+plot1 <- ggplot(total,aes(mean_value,lambda,z=z)) + 
+  geom_density_2d() +
+  geom_point(x = meanvalue_max, y = lambda_max)
+
+plot1 + annotate("text", x = meanvalue_max, y = lambda_max,
+           label = expression( group("(",list(theta[max] , lambda[max]),")")))
+```
+
+
+
+## 1d
+
+```{r}
+
+p_uni <- function(mean_value,lambda){
+p_uniform <- exp (lambda*sum(rnd)*mean_value-length(rnd)*
+                           ((mean_value)**2))
+return(p_uniform)
+}
+
+p_normal <- function(mean_value,lambda,lambda_0){
+  mean_0=0
+  L <- lambda_0+length(rnd)*lambda
+  M <- (lambda_0*mean_0+lambda*sum(rnd))/(L)
+  p_normal <- exp(L*M*mean_value - 0.5*L*(mean_value**2))
+}
+
+my_function2<-function(mean_value,lambda){
+  final <- 0
+  for (variable in rnd) {
+    c <- (variable-mean_value)**2
+    final <- final+c
+  }
+
+  likelihood <- ((sqrt(lambda/2*3.14))**length(rnd))*exp(0.5*lambda)*final
+  return(likelihood)
+}
+
+lambda_0 <- seq(0.1,100,length=100)
+
+
+lvt <- my_function2(mean_value,lambda)
+pn <- p_normal(mean_value,lambda,lambda_0 = lambda_0)
+pu <- p_uni(mean_value = mean_value,lambda = lambda)
+id <- 0:99
+final_data <- data.frame(likelihood = lvt, p_uniform = pu, p_normal = pn,
+                       mean_value = mean_value)
+
+df_1 <- melt(final_data, id.vars="mean_value")
+
+
+ggplot(data=df_1, aes(x=mean_value,y=value,col=variable)) +
+  geom_line()
+```
+
+
+
+# Question2
+
+## 2a
+
+Hypotheses:
+Null Hypothesis, $$H_0 : \mu = 0.12$$
+Alternate Hypothesis, $$H_1 : \mu > 0.12$$
+
+## 2b
+
+Reject $H_0$ if $z >= z_{\alpha}$ 
+Since $\alpha = 0.01$, from the z table we can get $z_{0.01} = 2.33 $
+Therefore rejection region is:
+Reject $H_0$ if $z >= 2.33$
+
+## 2c
+
+Hypothesis testing:
+
+Hypotheses:
+Null Hypothesis, $H_0 : \mu = 0.12$
+Alternate Hypothesis, $H_1 : \mu > 0.12$
+
+Test Statistic:
+
+$$
+z_{obs} = \frac{\overline{y}-\mu_0}{s/\sqrt{n}}
+$$
+In the problem, we have 
+$$\overline{y} = 0.135 $$
+$$s = 0.03 $$
+$$\mu_0 = 0.12 $$ 
+$$n = 30 $$
+Substituting this on the above formule we get the test statistic 
+$$
+z_{obs} = \frac{0.135-0.12}{0.03/\sqrt{30}} = 2.74 
+$$
+
+Rejection Region:
+$$ z_{obs} = 2.74 > z_{\alpha=0.01} = 2.33
+$$
+Therefore we reject H_0.
+
+
+This means that there is sufficient evidence to conclude the alternate hypothesis that mean ozone levels in air currents over New England exceeds the federal ozone standard of 0.12 ppm.
+
+## 2d
+
+p-value = $p(z>=z_{obs}) = p(z >= 2.74) = 1 - p(z<2.74) = 1 - 0.9969 = 0.0031$
+
+Because p-value $p = 0.0031 < \alpha = 0.01$ we reject the null hypothesis $H_0$. This is consistent with our result in part c.
+
+## 2e
+
+Assumptions concerning the distribution of the random variable X, ozone level in
+the air:
+
+1. The data is continuous and not discrete
+2. The data is a simple random sample 
+3. The data in the population is normally distributed
+4. The population standard deviation is known
+
+# Question3
+
+## 3a
+
+```{r}
+data("BostonHousing")
+df_2 = BostonHousing
+
+bh = lm(crim ~ .,data = df_2)
+lm.betas <- bh$coefficients
+summary(bh)
+```
+
+We can see from the t-value that the model is significant.
+These are predictors can be rejected for $H_0 : \beta_j=0$ at $\alpha=0.05$  
+(ii)zn  
+(iii)dis  
+(iv)rad  
+(v)b  
+(vi)medv  
+
+Null hypothesis can be rejected for features whose Pr(>|t|) < 0.05. So from the above table we can reject null hypothesis for zn, dis, rad, b, medv
+
+
+## 3b
+
+```{r}
+y <- df_2$crim
+X <- as.matrix(df_2[-1])
+int <- rep(1, length(y))
+X <- cbind(int, X)
+X <- matrix(as.numeric(X),ncol = ncol(X))
+my.lm <- function(y,X){
+betas <- solve(t(X) %*% X) %*% t(X) %*% y
+return (betas)
+}
+my.lm(y,X)
+
+#Comparision
+results <- data.frame(our.results=my.lm(y,X), lm.results=lm.betas)
+print(results)
+
+#MSE
+beta = my.lm(y,X)
+int <- rep(1, length(y))
+#Z = cbind(int,X)
+#Z <- matrix(as.numeric(Z),ncol = ncol(Z))
+pred   = X %*% beta
+MSE_own = mean((y - pred)^2)
+MSE_lm = mean(bh$residuals^2)
+results_mse <- data.frame(our.result=MSE_own, lm.result=MSE_lm)
+print(results_mse)
+```
+
+
+## 3c
+
+```{r}
+train = tail(df_2,-10)
+test = head(df_2,10)
+ytrain = train$crim
+ytest = test$crim
+
+
+Xtest =  as.matrix(test[-1])
+int2 = rep(1, length(ytest))
+Xtest = cbind(int2,Xtest)
+Xtest <- matrix(as.numeric(Xtest),ncol = ncol(Xtest))
+xtest = head(Xtest, 1)
+
+Xtrain =  as.matrix(train[-1])
+int2 = rep(1, length(ytrain))
+Xtrain = cbind(int2,Xtrain)
+Xtrain = matrix(as.numeric(Xtrain),ncol = ncol(Xtrain))
+
+my.predict <- function(Xtrain, ytrain, Xtest){
+  n = length(ytrain)
+  #lm.model <- lm(y ~ x)
+  p = ncol(Xtest)
+ # y.fitted <- lm.model$fitted.values # Extract the fitted values of y
+  beta = my.lm(ytrain,Xtrain)
+  y.fitted =  Xtrain %*% beta
+#pred.y <- b1 * pred.x + b0
+ 
+  pred.y =  Xtest%*%beta
+  return(pred.y)
+}
+predTest = my.predict(Xtrain, ytrain,Xtest)
+RMSE = sqrt((1/10)*sum((predTest - ytest)^2))
+print(RMSE)
+```
+
+
+## 3d
+
+```{r}
+summary(bh)
+```
+
+Pvalue is therefore lower than significance value (0.05). Thus, the null hypothesis that a model with no independent variables would adequately describe the data can be discarded. We can make the conclusion that independent variables help models fit better.
+
+
+## 3e
+```{r}
+bh2 = lm(crim ~ zn+dis+rad+b+medv,data = df_2)
+summary(bh2)
+
+
+
+anova(bh,bh2)
+```
+
+The F statistic is 1.6599 and the pvalue is 0.1507. pvalue is greater that significance level (0.05) so we need to accept the Null hypothesis for the partial F test that coefficients of the features of reduced model are 0.

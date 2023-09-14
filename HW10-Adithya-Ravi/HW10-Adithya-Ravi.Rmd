@@ -1,0 +1,90 @@
+---
+title: "**S2208 MATH8050 Data Analysis - Section 001: Homework 10 Due on 11/30/22**"
+author: "Adithya Ravi, C09059838"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r include=FALSE}
+library(glmnet)
+
+sessionInfo()
+```
+
+```{r}
+set.seed(123) 
+n <- 1000
+p <- 2000
+pred <- matrix(rnorm(n*p), nrow = n, ncol = p)
+dv <- (rowSums(pred[,1:5]) + .8*rowSums(pred[,6:10]) + 
+         .6 * rowSums(pred[,11:15]) + .4*rowSums(pred[,16:20]) + 
+         .2 * rowSums(pred[,21:25]) + rnorm(n))
+pred <- scale(pred)
+train_rows <- sample(1:n, .8*n, replace = F)
+pred.train <- pred[train_rows,]
+dv.train <- dv[train_rows]
+pred.test <- pred[-train_rows,]
+dv.test <- dv[-train_rows]
+```
+
+# Solutions
+
+# question1
+
+## 1a
+
+```{r}
+ridge <- cv.glmnet(x=pred.train, y=dv.train, type.measure="mse",
+alpha=0, family="gaussian", nlambda=200)
+```
+```{r}
+plot(ridge)
+```
+```{r}
+ridge.predicted <- predict(ridge, ridge$lambda.1se, new=pred.test)
+mean((dv.test - ridge.predicted)^2)
+```
+
+
+## 1b
+```{r}
+LASSO <- cv.glmnet(x=pred.train, y=dv.train, type.measure="mse",
+alpha=1, family="gaussian", nlambda=200)
+```
+```{r}
+plot(LASSO)
+```
+```{r}
+lasso.predicted <- predict(LASSO, LASSO$lambda.1se, new=pred.test)
+mean((dv.test - lasso.predicted)^2)
+```
+## 1c
+```{r}
+models_list <- list()
+  for (i in 0:20) {
+    names <- paste0("alpha", i/20)
+    models_list[[names]] <- cv.glmnet(pred.train, 
+                                      dv.train, type.measure="mse", 
+                                      alpha=i/20, family="gaussian") 
+  }
+```
+```{r}
+results <- data.frame()
+for (i in 0:20) {
+  name <- paste0("alpha", i/20)
+  predicted <- predict(models_list[[name]],
+  s=models_list[[name]]$lambda.1se, newx=pred.test)
+  mse <- mean((dv.test - predicted)^2)
+  temp <- data.frame(alpha=i/20, mse=mse, name=name)
+  results <- rbind(results, temp)
+}
+```
+```{r}
+results
+```
+
+```{r}
+plot(results$alpha,results$mse)
+```
+
+
